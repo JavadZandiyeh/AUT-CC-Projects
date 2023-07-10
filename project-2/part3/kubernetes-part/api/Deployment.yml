@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: link-shortener-deployment
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: link-shortener-deployment
+  template:
+    metadata:
+      labels:
+        app: link-shortener-deployment
+    spec:
+      volumes:
+        - name: api-volume
+          hostPath:
+            path: /app/api
+      containers:
+        - name: link-shortener-deployment
+          image: javad0zandiyeh/aut-cc-part3:v1
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: api-volume
+              mountPath: /app/api
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: APP_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: link-shortener-configmap
+                  key: app.ip
+            - name: APP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: link-shortener-configmap
+                  key: app.port
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: link-shortener-configmap
+                  key: redis.serviceName
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: link-shortener-configmap
+                  key: redis.port
+            - name: CACHE_TIME_OUT
+              valueFrom:
+                configMapKeyRef:
+                  name: link-shortener-configmap
+                  key: cache.timeOut
+            - name: REBRANDLY_API
+              valueFrom:
+                secretKeyRef:
+                  name: link-shortener-secret
+                  key: rebrandly.api
+            - name: REBRANDLY_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: link-shortener-secret
+                  key: rebrandly.key
